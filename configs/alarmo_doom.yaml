@@ -1,0 +1,147 @@
+cpu:
+  type: cortex-m7
+  cpuid: 0x41c27
+  vtor: 0x70000400
+
+memorymap:
+  # DTCM
+  - type: ram
+    start: 0x20000000
+    end: 0x2001FFFF
+  # AXI SRAM
+  - type: ram
+    start: 0x24000000
+    end: 0x2401FFFF
+  # RAM shared between ITCM and AXI
+  - type: ram
+    start: 0x24020000
+    end: 0x2404FFFF
+  # SRAM1
+  - type: ram
+    start: 0x30000000
+    end: 0x30003FFF
+  # SRAM4
+  - type: ram
+    start: 0x38000000
+    end: 0x38003FFF
+  # ITCM RAM
+  - type: ram
+    start: 0x00000000
+    end: 0x0000FFFF
+  # Flash memory bank 1
+  - type: rom
+    start: 0x08000000
+    end: 0x080FFFFF
+  # OctoSPI 2
+  - type: ram
+    start: 0x70000000
+    end: 0x7FFFFFFF
+  # Peripherals
+  - type: mmio
+    start: 0x40000000
+    end: 0x5FFFFFFF
+
+loaders:
+  - id: emu.loader.elf
+    file: "alarmo_doom.elf"
+
+peripherals:
+  # GPIOG
+  - id: emu.peripherals.stm32h730.gpio
+    start: 0x58021800
+    end: 0x58021BFF
+    identifier: "GPIOG"
+  # GPIOC
+  - id: emu.peripherals.stm32h730.gpio
+    start: 0x58020800
+    end: 0x58020BFF
+    identifier: "GPIOC"
+  - id: emu.peripherals.stm32h730.mdma
+    start: 0x52000000
+    end: 0x52000FFF
+  - id: emu.peripherals.stm32h730.flash
+    start: 0x52002000
+    end: 0x52002FFF
+  - id: emu.peripherals.stm32h730.pwr
+    start: 0x58024800
+    end: 0x58024BFF
+  - id: emu.peripherals.stm32h730.rcc
+    start: 0x58024400
+    end: 0x580247FF
+    # ADC1
+  - id: emu.peripherals.stm32h730.adc
+    start: 0x40022000
+    end: 0x400220FF
+    # ADC2
+  - id: emu.peripherals.stm32h730.adc
+    start: 0x40022100
+    end: 0x400221FF
+    # USART1
+  - id: emu.peripherals.stm32h730.usart
+    start: 0x40011000
+    end: 0x400113FF
+    identifier: "usart1"
+    # FMC control registers
+  - id: emu.peripherals.stm32h730.fmc
+    start: 0x52004000
+    end: 0x52004FFF
+    identifier: "fmc"
+
+devices:
+  - id: emu.devices.console
+    identifier: "console"
+  - id: emu.devices.st7789
+    identifier: "display"
+  - id: emu.py.devices.button
+    identifier: "dial"
+    low_active: true
+  - id: emu.py.devices.button
+    identifier: "notification"
+    low_active: true
+  - id: emu.py.devices.button
+    identifier: "back"
+    low_active: true
+
+connectors:
+  - from:
+      identifier: "usart1"
+      port: "tx"
+    to:
+      identifier: "console"
+      port: "rx"
+  - from:
+      identifier: "GPIOC"
+      port: "pin7"
+    to:
+      identifier: "display"
+      port: "select"
+  - from:
+      identifier: "fmc"
+      port: "command"
+    to:
+      identifier: "display"
+      port: "command"
+  - from:
+      identifier: "fmc"
+      port: "data"
+    to:
+      identifier: "display"
+      port: "data"
+  - from:
+      identifier: "dial"
+      port: "output"
+    to:
+      identifier: "GPIOC"
+      port: "pin5"
+  - from:
+      identifier: "notification"
+      port: "output"
+    to:
+      identifier: "GPIOG"
+      port: "pin5"
+  - from:
+      identifier: "back"
+      port: "output"
+    to:
+      identifier: "GPIOG"
+      port: "pin6"

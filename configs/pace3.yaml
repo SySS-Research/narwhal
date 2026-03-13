@@ -1,0 +1,53 @@
+cpu:
+  type: cortex-m4
+  cpuid: 0x41c24
+  vtor: 0x10002000
+
+memorymap:
+  # "Code"
+  - type: ram
+    start: 0x00000000
+    end: 0x1FFFFFFF
+  # Peripheral
+  - type: mmio
+    start: 0x40000000
+    end:  0x5FFFFFFF 
+
+loaders:
+  - id: emu.loader.bin
+    address: 0x10000000
+    offset: 0x10
+    file: "81_COROS_W331_bootloader_ota.bin"
+  # NOP out some blocking interrupt code
+  # TODO avoid this
+  - id: emu.loader.imm32
+    address: 0x10003c50
+    value: 0x00BF00BF
+
+peripherals:
+  # SCB10
+  - id: emu.peripherals.psoc62.scb
+    start: 0x406a0000
+    end: 0x406A0FD0
+    identifier: "SCB10"
+  - id: emu.peripherals.psoc62.backup
+    start: 0x40270000
+    end: 0x4027ff03
+  - id: emu.peripherals.psoc62.srss
+    start: 0x40260000
+    end: 0x4026FF2F
+  - id: emu.peripherals.psoc62.cpuss
+    start: 0x40200000
+    end: 0x4020affb
+
+devices:
+  - id: emu.devices.console
+    identifier: "console"
+
+connectors:
+  - from:
+      identifier: "SCB10"
+      port: "tx"
+    to:
+      identifier: "console"
+      port: "rx"

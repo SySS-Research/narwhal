@@ -1,0 +1,74 @@
+cpu:
+  type: cortex-m7
+  cpuid: 0x41c27
+  vtor: 0x08000000
+
+memorymap:
+  # DTCM
+  - type: ram
+    start: 0x20000000
+    end: 0x2001FFFF
+  # AXI SRAM
+  - type: ram
+    start: 0x24000000
+    end: 0x2401FFFF
+  # RAM shared between ITCM and AXI
+  - type: ram
+    start: 0x24020000
+    end: 0x2404FFFF
+  # SRAM1
+  - type: ram
+    start: 0x30000000
+    end: 0x30003FFF
+  # SRAM4
+  - type: ram
+    start: 0x38000000
+    end: 0x38003FFF
+  # ITCM RAM
+  - type: ram
+    start: 0x00000000
+    end: 0x0000FFFF
+  # Flash memory bank 1
+  - type: rom
+    start: 0x08000000
+    end: 0x080FFFFF
+  # Peripherals
+  - type: mmio
+    start: 0x40000000
+    end: 0x5FFFFFFF
+
+loaders:
+  - id: emu.loader.elf
+    file: "test.elf"
+  # Set fuzzing test cases to 0, in case not fuzzing
+  - id: emu.loader.imm32
+    address: 0x24000000
+    value: 0
+
+peripherals:
+  - id: emu.peripherals.stm32h730.flash
+    start: 0x52002000
+    end: 0x52002FFF
+  - id: emu.peripherals.stm32h730.pwr
+    start: 0x58024800
+    end: 0x58024BFF
+  - id: emu.peripherals.stm32h730.rcc
+    start: 0x58024400
+    end: 0x580247FF
+    # USART1
+  - id: emu.peripherals.stm32h730.usart
+    start: 0x40011000
+    end: 0x400113FF
+    identifier: "usart1"
+
+devices:
+  - id: emu.devices.console
+    identifier: "console"
+
+connectors:
+  - from:
+      identifier: "usart1"
+      port: "tx"
+    to:
+      identifier: "console"
+      port: "rx"

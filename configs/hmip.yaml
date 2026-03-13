@@ -1,0 +1,48 @@
+cpu:
+  type: cortex-m3
+  cpuid: 0x41c23
+  # vtor: 0x08000000
+  vtor: 0x08001000
+
+memorymap:
+  - type: mmio
+    start: 0x40000000
+    end: 0x5FFFFFFF
+  # SRAM
+  - type: ram
+    start: 0x20000000
+    end: 0x2000FFFF
+  # Flash
+  - type: ram # HMIP bootloader writes to flash
+    start: 0x08000000
+    end: 0x0803FFFF
+
+loaders:
+  - id: emu.loader.bin
+    address: 0x08000000
+    file: "boot0.bin"
+  - id: emu.loader.srec
+    file: "HMIP-HAP-JS1-local_bootloader_update.srec"
+
+peripherals:
+  # USART1
+  - id: emu.peripherals.stm32f1xx.usart
+    start: 0x40013800
+    end: 0x40013BFF
+    identifier: "USART1"
+  # DMA1
+  - id: emu.peripherals.stm32f1xx.dma
+    start: 0x40020000
+    end: 0x400203FF
+
+devices:
+  - id: emu.devices.console
+    identifier: "console"
+
+connectors:
+  - from:
+      identifier: "USART1"
+      port: "tx"
+    to:
+      identifier: "console"
+      port: "rx"

@@ -1,0 +1,8 @@
+build/
+afl_output/
+imgui.ini
+*.elf
+*.svd
+*.srec
+*.bin
+*.log

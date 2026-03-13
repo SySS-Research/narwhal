@@ -1,0 +1,15 @@
+[submodule "unicorn"]
+	path = external/unicorn
+	url = https://github.com/unicorn-engine/unicorn.git
+[submodule "external/imgui"]
+	path = external/imgui
+	url = https://github.com/pthom/imgui.git
+[submodule "external/imnodes"]
+	path = external/imnodes
+	url = https://github.com/Nelarius/imnodes
+[submodule "external/argparse"]
+	path = external/argparse
+	url = https://github.com/p-ranav/argparse.git
+[submodule "external/ELFIO"]
+	path = external/ELFIO
+	url = https://github.com/serge1/ELFIO.git
