@@ -1,0 +1,3 @@
+external/** linguist-vendored
+scripts/emu/** linguist-vendored
+scripts/imgui/** linguist-vendored
