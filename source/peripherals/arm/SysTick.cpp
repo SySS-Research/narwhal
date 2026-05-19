@@ -27,8 +27,11 @@ void SysTick::Update()
 uint32_t SysTick::Read(uint32_t offset, uint32_t size)
 {
     switch (offset) {
-        case 0x0: // SYST_CSR
-            return mCSR;
+        case 0x0: {// SYST_CSR
+            CSR csr = mCSR;
+            mCSR.clearCOUNTFLAG();
+            return csr;
+        }
         case 0x4: // SYST_RVR
             return mLoad;
         case 0x8: // SYST_CVR
@@ -76,6 +79,9 @@ bool SysTick::Tick()
         mLastTick = current;
 
         // TODO this is not the right way to do it
+        if (mCSR.ENABLE()) {
+            mCSR.setCOUNTFLAG();
+        }
         if (!mCSR.ENABLE() || !mCSR.TICKINT()) {
             return false;
         }
