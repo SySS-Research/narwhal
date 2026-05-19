@@ -51,6 +51,9 @@ Emulator::Emulator()
     mEngine.OnExceptionReturn([this](arm::EXC_RETURN excReturn){
         mNVIC->HandleExceptionReturn(excReturn);
     });
+    mEngine.OnBKPT([this](){
+        OnBKPT();
+    });
 
     // Map system control space
     // See Arm®v7-M Architecture Reference Manual - B3.2 System Control Space (SCS)
@@ -397,6 +400,13 @@ void Emulator::OnException(arm::Exception exception)
     if (afl::ForkserverRunning()) {
         afl::RaiseCrash();
     }
+
+    mGDBStub.Break();
+}
+
+void Emulator::OnBKPT()
+{
+    EMU_LOG_WARN("BKPT instruction at address 0x{:08x}", GetRegister(arm::Register::PC));
 
     mGDBStub.Break();
 }

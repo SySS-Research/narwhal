@@ -72,6 +72,11 @@ public:
         mExceptionReturnCallback = std::move(callback);
     }
 
+    void OnBKPT(std::function<void()> callback)
+    {
+        mBKPTCallback = callback;
+    }
+
 protected:
     void CreateMissingWatchpointHooks();
 
@@ -89,6 +94,7 @@ protected:
     std::function<void(uint32_t, uint32_t)> mCodeCallback;
     std::function<void(arm::Exception)> mExceptionCallback;
     std::function<void(arm::EXC_RETURN)> mExceptionReturnCallback;
+    std::function<void()> mBKPTCallback;
     std::vector<std::unique_ptr<MMIOReadCallbackFn>> mMMIOReadCallbacks;
     std::vector<std::unique_ptr<MMIOWriteCallbackFn>> mMMIOWriteCallbacks;
 

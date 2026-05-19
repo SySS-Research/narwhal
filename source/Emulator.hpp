@@ -121,6 +121,7 @@ private:
     void OnUnmappedMemory(MemoryFlags type, uint32_t address, uint32_t size, uint32_t value);
     void OnCode(uint32_t address, uint32_t size);
     void OnException(arm::Exception exception);
+    void OnBKPT();
 
 protected:
     UnicornEngine mEngine;

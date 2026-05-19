@@ -142,6 +142,7 @@ UnicornEngine::UnicornEngine(arm::CPUModel cpu)
  mCodeCallback(),
  mExceptionCallback(),
  mExceptionReturnCallback(),
+ mBKPTCallback(),
  mMMIOReadCallbacks(),
  mMMIOWriteCallbacks(),
  mWatchpoints(),
@@ -231,6 +232,10 @@ UnicornEngine::UnicornEngine(arm::CPUModel cpu)
             UnicornEngine* _this = static_cast<UnicornEngine*>(userData);
 
             switch(intno) {
+                case EXCP_BKPT:
+                    _this->mBKPTCallback();
+                    return;
+
                 // From Unicorn FAQ:
                 // > Note that for cortex-m exec_return, Unicorn has a magic software exception with interrupt number 8.
                 // > You may register a hook to handle that.
