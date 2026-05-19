@@ -8,6 +8,7 @@
 #include <atomic>
 #include <list>
 #include <unordered_map>
+#include <mutex>
 
 namespace emu
 {

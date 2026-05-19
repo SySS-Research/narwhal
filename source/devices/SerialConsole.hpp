@@ -2,6 +2,7 @@
 
 #include "Device.hpp"
 #include "connectors.hpp"
+#include <mutex>
 
 class SerialConsole : public emu::Device {
 public:
