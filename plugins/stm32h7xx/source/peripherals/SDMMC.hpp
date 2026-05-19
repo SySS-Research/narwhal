@@ -20,7 +20,7 @@ public:
     class POWER : public arm::RegisterBase
     {
     public:
-        inline POWER(uint32_t value) : RegisterBase(value) {}
+        inline POWER(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_BIT(DIRPOL, 4);
         REGISTER_BASE_BIT(VSWITCHEN, 3);
@@ -31,7 +31,7 @@ public:
     class CMD : public arm::RegisterBase
     {
     public:
-        inline CMD(uint32_t value) : RegisterBase(value) {}
+        inline CMD(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_BIT(CMDSUSPEND, 16);
         REGISTER_BASE_BIT(BOOTEN, 15);
@@ -50,14 +50,14 @@ public:
     class DCTRL : public arm::RegisterBase
     {
     public:
-        inline DCTRL(uint32_t value) : RegisterBase(value) {}
+        inline DCTRL(uint32_t value) : arm::RegisterBase(value) {}
 
     };
 
     class STA : public arm::RegisterBase
     {
     public:
-        inline STA(uint32_t value) : RegisterBase(value) {}
+        inline STA(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_BIT(IDMABTC, 28);
         REGISTER_BASE_BIT(IDMATE, 27);

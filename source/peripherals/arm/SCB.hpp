@@ -24,7 +24,7 @@ public:
     class ICSR : public arm::RegisterBase
     {
     public:
-        inline ICSR(uint32_t value) : RegisterBase(value) {}
+        inline ICSR(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_BIT(NMIPENDSET, 31);
         REGISTER_BASE_BIT(PENDSVSET, 28);
@@ -41,7 +41,7 @@ public:
     class AIRCR : public arm::RegisterBase
     {
     public:
-        inline AIRCR(uint32_t value) : RegisterBase(value) {}
+        inline AIRCR(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_RANGE(VECTKEY, 31, 16);
         REGISTER_BASE_BIT(ENDIANNESS, 15);
@@ -54,7 +54,7 @@ public:
     class SHCSR : public arm::RegisterBase
     {
     public:
-        inline SHCSR(uint32_t value) : RegisterBase(value) {}
+        inline SHCSR(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_BIT(USGFAULTENA, 18);
         REGISTER_BASE_BIT(BUSFAULTENA, 17);

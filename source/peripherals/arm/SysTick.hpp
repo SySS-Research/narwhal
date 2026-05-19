@@ -25,7 +25,7 @@ public:
     class CSR : public arm::RegisterBase
     {
     public:
-        inline CSR(uint32_t value) : RegisterBase(value) {}
+        inline CSR(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_BIT(COUNTFLAG, 16);
         REGISTER_BASE_BIT(CLKSOURCE, 2);

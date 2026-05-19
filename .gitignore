@@ -1,3 +1,4 @@
+.vscode/
 build/
 afl_output/
 imgui.ini

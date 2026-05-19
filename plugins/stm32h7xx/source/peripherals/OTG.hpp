@@ -18,7 +18,7 @@ public:
     class GRSTCTL : public arm::RegisterBase
     {
     public:
-        inline GRSTCTL(uint32_t value) : RegisterBase(value) {}
+        inline GRSTCTL(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_BIT(AHBIDL, 31);
         REGISTER_BASE_BIT(DMAREQ, 30);

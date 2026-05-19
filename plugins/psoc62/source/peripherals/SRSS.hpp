@@ -19,7 +19,7 @@ public:
     class FLL_STATUS : public arm::RegisterBase
     {
     public:
-        inline FLL_STATUS(uint32_t value) : RegisterBase(value) {}
+        inline FLL_STATUS(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_BIT(CCO_READY, 2);
         REGISTER_BASE_BIT(UNLOCK_OCCURRED, 1);
@@ -29,7 +29,7 @@ public:
     class PLL_STATUS : public arm::RegisterBase
     {
     public:
-        inline PLL_STATUS(uint32_t value) : RegisterBase(value) {}
+        inline PLL_STATUS(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_BIT(UNLOCK_OCCURRED, 1);
         REGISTER_BASE_BIT(LOCKED, 0);

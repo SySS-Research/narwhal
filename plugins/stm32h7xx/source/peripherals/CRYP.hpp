@@ -19,7 +19,7 @@ public:
     class CR : public arm::RegisterBase
     {
     public:
-        inline CR(uint32_t value) : RegisterBase(value) {}
+        inline CR(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_RANGE(NPBLB, 23, 20);
         REGISTER_BASE_RANGE(GCM_CCMPH, 17, 16);
@@ -34,7 +34,7 @@ public:
     class SR : public arm::RegisterBase
     {
     public:
-        inline SR(uint32_t value) : RegisterBase(value) {}
+        inline SR(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_BIT(BUSY, 4);
         REGISTER_BASE_BIT(OFFU, 3);

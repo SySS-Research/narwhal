@@ -59,7 +59,7 @@ bool Plugin::Load()
         return false;
     }
 
-    EMU_LOG_INFO("Loaded plugin: {}", GetName());
+    EMU_LOG_DEBUG("Loaded plugin: {}", GetName());
 
     return true;
 }

@@ -81,68 +81,71 @@ enum class Exception : int
     ExternalInterrupt0 = 16,
 };
 
-class RegisterBase
+template<typename T = uint32_t>
+class RegisterBaseT
 {
 public:
-    inline RegisterBase(uint32_t value) : mValue(value) {}
+    using value_type = T;
+
+    inline RegisterBaseT(T value) : mValue(value) {}
 
     // Operators for convincience
-    inline operator uint32_t() const { return mValue; }
+    inline operator T() const { return mValue; }
 
-    inline RegisterBase& operator&=(RegisterBase rhs)
+    inline RegisterBaseT& operator&=(RegisterBaseT rhs)
     {
         mValue &= rhs.mValue;
         return *this;
     }
 
-    inline RegisterBase& operator|=(RegisterBase rhs)
+    inline RegisterBaseT& operator|=(RegisterBaseT rhs)
     {
         mValue |= rhs.mValue;
         return *this;
     }
 
-    inline RegisterBase& operator^=(RegisterBase rhs)
+    inline RegisterBaseT& operator^=(RegisterBaseT rhs)
     {
         mValue ^= rhs.mValue;
         return *this;
     }
 
-    inline RegisterBase& operator<<=(uint32_t shift)
+    inline RegisterBaseT& operator<<=(uint32_t shift)
     {
         mValue <<= shift;
         return *this;
     }
 
-    inline RegisterBase& operator>>=(uint32_t shift)
+    inline RegisterBaseT& operator>>=(uint32_t shift)
     {
         mValue >>= shift;
         return *this;
     }
 
-    inline RegisterBase operator~() const
+    inline RegisterBaseT<T> operator~() const
     {
-        return RegisterBase(~mValue);
+        return RegisterBaseT<T>(~mValue);
     }
 
-    inline bool operator==(RegisterBase rhs) const
+    inline bool operator==(RegisterBaseT rhs) const
     {
         return mValue == rhs.mValue;
     }
 
-    inline bool operator!=(RegisterBase rhs) const
+    inline bool operator!=(RegisterBaseT rhs) const
     {
         return mValue != rhs.mValue;
     }
 
     // For handling byte and halfword access
-    uint32_t Read(uint32_t offset, uint32_t size)
+    T Read(uint32_t offset, uint32_t size)
     {
         return (mValue >> offset*8) & ((1u << size*8) - 1u);
     }
 
-    void Write(uint32_t offset, uint32_t size, uint32_t value)
+    void Write(uint32_t offset, uint32_t size, T value)
     {
-        uint32_t mask = ((1u << size*8) - 1u) << offset*8;
+        T mask = ((1u << size*8) - 1u) << offset*8;
 
         mValue &= ~mask;
         mValue |= (value << offset*8) & mask;
@@ -154,18 +157,22 @@ public:
     inline void clear ## __name__() { mValue &= ~(1u << __bit__); }
 
 #define REGISTER_BASE_RANGE(__name__, __end__, __start__)                                       \
-    inline uint32_t __name__() const {                                                          \
-        constexpr uint32_t mask = ((1u << ((__end__) - (__start__) + 1)) - 1u) << (__start__);  \
+    inline value_type __name__() const {                                                          \
+        constexpr value_type mask = ((1u << ((__end__) - (__start__) + 1)) - 1u) << (__start__);  \
         return (mValue & mask) >> (__start__);                                                  \
     }                                                                                           \
-    inline void set ## __name__(uint32_t value) {                                               \
-        constexpr uint32_t mask = ((1u << ((__end__) - (__start__) + 1)) - 1u) << (__start__);  \
+    inline void set ## __name__(value_type value) {                                               \
+        constexpr value_type mask = ((1u << ((__end__) - (__start__) + 1)) - 1u) << (__start__);  \
         mValue = (mValue & ~mask) | ((value << (__start__)) & mask);                            \
     }
 
 protected:
-    uint32_t mValue;
+    T mValue;
 };
+
+using RegisterBase = RegisterBaseT<>;
+using RegisterBase32 = RegisterBaseT<>;
+using RegisterBase8 = RegisterBaseT<uint8_t>;
 
 // See Arm®v7-M Architecture Reference Manual - B1.4.2 The special-purpose Program Status Registers, xPSR
 class XPSR : public RegisterBase

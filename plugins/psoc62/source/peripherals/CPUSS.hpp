@@ -19,7 +19,7 @@ public:
     class CM4_CLOCK_CTL : public arm::RegisterBase
     {
     public:
-        inline CM4_CLOCK_CTL(uint32_t value) : RegisterBase(value) {}
+        inline CM4_CLOCK_CTL(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_RANGE(FAST_INT_DIV, 15, 8);
     };

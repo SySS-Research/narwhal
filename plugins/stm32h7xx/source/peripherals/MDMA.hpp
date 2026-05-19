@@ -29,7 +29,7 @@ public:
         class CISR : public arm::RegisterBase
         {
         public:
-            inline CISR(uint32_t value) : RegisterBase(value) {}
+            inline CISR(uint32_t value) : arm::RegisterBase(value) {}
 
             REGISTER_BASE_BIT(CLTCIF, 4);
             REGISTER_BASE_BIT(CBTIF,  3);
@@ -41,7 +41,7 @@ public:
         class CCR : public arm::RegisterBase
         {
         public:
-            inline CCR(uint32_t value) : RegisterBase(value) {}
+            inline CCR(uint32_t value) : arm::RegisterBase(value) {}
 
             REGISTER_BASE_BIT(SWRQ, 16);
             REGISTER_BASE_BIT(EN, 0);
@@ -50,7 +50,7 @@ public:
         class CBNDTR : public arm::RegisterBase
         {
         public:
-            inline CBNDTR(uint32_t value) : RegisterBase(value) {}
+            inline CBNDTR(uint32_t value) : arm::RegisterBase(value) {}
 
             REGISTER_BASE_RANGE(BRC,  31, 20);
             REGISTER_BASE_RANGE(BNDT, 16, 0);

@@ -29,7 +29,7 @@ public:
         class CCR : public arm::RegisterBase
         {
         public:
-            inline CCR(uint32_t value) : RegisterBase(value) {}
+            inline CCR(uint32_t value) : arm::RegisterBase(value) {}
 
             REGISTER_BASE_BIT(MEM2MEM, 14);
             REGISTER_BASE_RANGE(PL,    13, 12);
@@ -60,7 +60,7 @@ public:
     class ISR : public arm::RegisterBase
     {
     public:
-        inline ISR(uint32_t value) : RegisterBase(value) {}
+        inline ISR(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_BIT(TCIF7, 25);
         REGISTER_BASE_BIT(TCIF6, 21);

@@ -19,7 +19,7 @@ public:
     class STATUS : public arm::RegisterBase
     {
     public:
-        inline STATUS(uint32_t value) : RegisterBase(value) {}
+        inline STATUS(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_BIT(WCO_OK, 2);
         REGISTER_BASE_BIT(RTC_BUSY, 0);

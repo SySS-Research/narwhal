@@ -18,7 +18,7 @@ public:
     class SCAR : public arm::RegisterBase
     {
     public:
-        inline SCAR(uint32_t value) : RegisterBase(value) {}
+        inline SCAR(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_BIT(DMES, 31);
         REGISTER_BASE_RANGE(SEC_AREA_END, 27, 16);

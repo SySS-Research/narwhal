@@ -18,7 +18,7 @@ public:
     class CR : public arm::RegisterBase
     {
     public:
-        inline CR(uint32_t value) : RegisterBase(value) {}
+        inline CR(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_BIT(PLL3RDY, 29);
         REGISTER_BASE_BIT(PLL3ON, 28);
@@ -37,7 +37,7 @@ public:
     class CFGR : public arm::RegisterBase
     {
     public:
-        inline CFGR(uint32_t value) : RegisterBase(value) {}
+        inline CFGR(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_RANGE(SWS, 5, 3);
         REGISTER_BASE_RANGE(SW, 2, 0);
@@ -46,7 +46,7 @@ public:
     class PLLCKSELR : public arm::RegisterBase
     {
     public:
-        inline PLLCKSELR(uint32_t value) : RegisterBase(value) {}
+        inline PLLCKSELR(uint32_t value) : arm::RegisterBase(value) {}
 
         REGISTER_BASE_RANGE(DIVM3, 25, 20);
         REGISTER_BASE_RANGE(DIVM2, 17, 12);
