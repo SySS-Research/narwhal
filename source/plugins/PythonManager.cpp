@@ -203,6 +203,10 @@ void PythonManager::Deinit()
 
 bool PythonManager::LoadPlugins(const std::string& path)
 {
+    if (!std::filesystem::exists(path)) {
+        return false;
+    }
+
     pybind11::gil_scoped_acquire g{};
 
     for (const auto& file : std::filesystem::directory_iterator(path)) {

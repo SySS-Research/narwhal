@@ -61,10 +61,16 @@ int main(int argc, char const* argv[])
         emu::SetLogLevel(logLevels.at(*logLevel));
     }
 
-    // Try to load from current plugins folder first
+    // Try to load from current directory first
     emu::PluginManager::LoadPlugins("plugins");
-    // Try to load from build folder
-    emu::PluginManager::LoadPlugins("build/plugins");
+
+    // Load plugins from ENV path next
+    const char* plugindir = std::getenv("NARWHAL_PLUGINDIR");
+    if (plugindir) {
+        if (!emu::PluginManager::LoadPlugins(plugindir)) {
+            EMU_LOG_WARN("Failed to load plugins from \"{}\"", plugindir);
+        }
+    }
 
     // Initializing python plugins takes a long time, do this before forking for fuzzing
     emu::PythonManager::Init();
@@ -74,7 +80,16 @@ int main(int argc, char const* argv[])
         EMU_LOG_INFO("Generated emu stubs to {}", *output);
         return 0;
     } else {
+        // Try to load scripts from current directory first
         emu::PythonManager::LoadPlugins("scripts");
+
+        // Load scripts from env path next
+        const char* scriptdir = std::getenv("NARWHAL_SCRIPTDIR");
+        if (scriptdir) {
+            if (!emu::PythonManager::LoadPlugins(scriptdir)) {
+                EMU_LOG_WARN("Failed to load scripts from \"{}\"", scriptdir);
+            }
+        }
     }
 
     // Register all of our things
