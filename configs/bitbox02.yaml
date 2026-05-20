@@ -1,0 +1,42 @@
+cpu:
+  type: cortex-m4
+  cpuid: 0x41c24
+  vtor: 0x00000000
+
+memorymap:
+  # Flash
+  - type: rom
+    start: 0x00000000
+    end: 0xFFFFF
+  # SRAM
+  - type: ram
+    start: 0x20000000
+    end: 0x2003FFFF
+  # Peripherals
+  - type: mmio
+    start: 0x40000000
+    end:  0x47FFFFFF 
+
+loaders:
+  - id: emu.loader.elf
+    file: "../bb02-bl-multi-development.elf"
+    # shared_data.fields.auto_enter
+  - id: emu.loader.imm8
+    address: 0x0000E000
+    value: 0x55
+
+
+peripherals:
+  - id: emu.peripherals.samd5x.oscctrl
+    start: 0x40001000
+    end: 0x400013FF
+  - id: emu.peripherals.samd5x.sercom
+    start: 0x41014000
+    end: 0x410143FF
+  - id: emu.peripherals.samd5x.trng
+    start: 0x42002800
+    end: 0x42002823
+
+devices:
+
+connectors:
