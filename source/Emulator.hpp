@@ -8,6 +8,7 @@
 #include "GDBStub.hpp"
 #include "CoverageCollector.hpp"
 
+#include <map>
 #include <unordered_map>
 #include <bitset>
 #include <mutex>
@@ -76,6 +77,9 @@ public:
     void PrintContext(emu::LogType type = emu::LogType::Debug);
     std::optional<capstone::Instruction> Disassemble(uint32_t address);
 
+    void AddSymbol(const std::string& name, uint32_t address);
+    std::optional<uint32_t> GetSymbolAddress(const std::string& name) const;
+
     // TODO do we want to expose the engine just like this?
     UnicornEngine& GetEngine() { return mEngine; };
 
@@ -136,6 +140,8 @@ protected:
     // CPU peripherals
     std::shared_ptr<NVIC> mNVIC;
     std::shared_ptr<SCB> mSCB;
+
+    std::map<std::string, uint32_t> mSymbols;
 
     GDBStub mGDBStub;
 

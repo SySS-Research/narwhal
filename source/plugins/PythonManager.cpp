@@ -11,6 +11,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
+#include <pybind11/stl.h>
 #include <pybind11/functional.h>
 #include <pybind11/native_enum.h>
 
@@ -99,7 +100,8 @@ PYBIND11_EMBEDDED_MODULE(emu, m)
             return self.WriteMemory(address, std::span(reinterpret_cast<uint8_t*>(bytesStr.data()), bytesStr.size()));
         }, pybind11::arg("address"), pybind11::arg("data"))
         .def("add_breakpoint", &emu::Emulator::AddBreakpoint, pybind11::arg("address"), pybind11::arg("size"), pybind11::arg("callback"))
-        .def("remove_breakpoint", &emu::Emulator::RemoveBreakpoint, pybind11::arg("handle"));
+        .def("remove_breakpoint", &emu::Emulator::RemoveBreakpoint, pybind11::arg("handle"))
+        .def("get_symbol_address", &emu::Emulator::GetSymbolAddress, pybind11::arg("name"));
 
     m.def("get_emulator", []() -> emu::Emulator* {
         return emu::Application::Get()->GetEmulator();

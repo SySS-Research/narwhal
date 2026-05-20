@@ -90,6 +90,35 @@ bool FileLoader::LoadElf(emu::Emulator* emulator, const std::string& path)
         }
     }
 
+    // Load symbols
+    size_t symbolCount = 0;
+    ELFIO::Elf_Half sec_num = reader.sections.size();
+    for (int i = 0; i < sec_num; ++i) {
+        ELFIO::section* psec = reader.sections[i];
+        // Check section type
+        if (psec->get_type() == ELFIO::SHT_SYMTAB) {
+            const ELFIO::symbol_section_accessor symbols( reader, psec );
+            for (unsigned int j = 0; j < symbols.get_symbols_num(); ++j) {
+                std::string name;
+                ELFIO::Elf64_Addr value;
+                ELFIO::Elf_Xword size;
+                unsigned char bind;
+                unsigned char type;
+                ELFIO::Elf_Half section_index;
+                unsigned char other;
+
+                // Read symbol properties
+                symbols.get_symbol(j, name, value, size, bind, type, section_index, other);
+
+                // Add symbol to emulation context
+                emulator->AddSymbol(name, value);
+                symbolCount++;
+            }
+        }
+    }
+
+    EMU_LOG_DEBUG("Loaded {} symbols", symbolCount);
+
     return true;
 }
 

@@ -16,6 +16,7 @@ Emulator::Emulator()
  mMMIORegions(),
  mNVIC(),
  mSCB(),
+ mSymbols(),
  mGDBStub(3000),
  mTraceEnabled(false),
  mCoverageCollector(nullptr)
@@ -269,6 +270,21 @@ std::optional<capstone::Instruction> Emulator::Disassemble(uint32_t address)
     ReadMemory(address, opcode);
 
     return capstone::Disassemble(address, opcode);
+}
+
+void Emulator::AddSymbol(const std::string& name, uint32_t address)
+{
+    mSymbols.emplace(name, address);
+}
+
+std::optional<uint32_t> Emulator::GetSymbolAddress(const std::string& name) const
+{
+    auto symbol = mSymbols.find(name);
+    if (symbol == mSymbols.end()) {
+        return std::nullopt;
+    }
+
+    return symbol->second;
 }
 
 void Emulator::EnableGDBStub()
