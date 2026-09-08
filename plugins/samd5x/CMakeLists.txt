@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 
 include(../EmuPlugin.cmake)
 
-find_package(MbedTLS REQUIRED)
+find_package(Botan REQUIRED)
 
 emu_add_plugin(
     NAME
@@ -15,5 +15,5 @@ emu_add_plugin(
 )
 
 target_link_libraries(samd5x PRIVATE
-    MbedTLS::mbedtls
+    botan::botan
 )

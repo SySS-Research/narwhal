@@ -1,5 +1,5 @@
 #include "CRYP.hpp"
-#include <mbedtls/aes.h>
+#include <botan/stream_cipher.h>
 #include <cstring>
 
 namespace stm
@@ -103,43 +103,32 @@ void CRYP::Write(uint32_t offset, uint32_t size, uint32_t value)
 
 void CRYP::PerformCrypt()
 {
-    // EMU_LOG_DEBUG("PerformCryp {:08x}", mIV[3]);
-
     // TODO encrypt, algorithm mode, keysize, etc.
     mOutputFIFO.clear();
 
-    mbedtls_aes_context ctx;
-    mbedtls_aes_init(&ctx);
-
-    // Set key (CTR requires enc for decrypt and encrypt)
-    mbedtls_aes_setkey_enc(&ctx, reinterpret_cast<const unsigned char*>(&mKEY[4]), 128);
+    const auto cipher = Botan::StreamCipher::create_or_throw("CTR-BE(AES-128)");
+    cipher->set_key(reinterpret_cast<uint8_t*>(&mKEY[4]), 16);
 
     // EMU_LOG_DEBUG("Key: {}", emu::BytesToHex(&mKEY[4], 16));
     // EMU_LOG_DEBUG("IV: {}", emu::BytesToHex(mIV, sizeof(mIV)));
 
     // Prepare iv
-    std::array<unsigned char, 16> iv, stream;
-    std::memcpy(iv.data(), mIV, sizeof(mIV));
-    std::fill(stream.begin(), stream.end(), 0);
+    cipher->set_iv(reinterpret_cast<uint8_t*>(&mIV[0]), sizeof(mIV));
 
+    // Copy input into a linear buffer
     std::vector<uint32_t> inputData, outputData;
     std::move(mInputFIFO.begin(), mInputFIFO.end(), std::back_inserter(inputData));
     outputData.resize(mInputFIFO.size());
 
     // EMU_LOG_DEBUG("inputData: {} {}", inputData.size(), emu::BytesToHex(inputData.data(), inputData.size() * 4));
 
-    size_t ncOff = 0;
-    if (mbedtls_aes_crypt_ctr(&ctx, mInputFIFO.size() * 4, &ncOff, iv.data(), stream.data(),
-        reinterpret_cast<const unsigned char*>(inputData.data()),
-        reinterpret_cast<unsigned char*>(outputData.data())) != 0) {
-        EMU_FATAL("Failed to crypt");
-    }
+    cipher->cipher(reinterpret_cast<uint8_t*>(inputData.data()), reinterpret_cast<uint8_t*>(outputData.data()), mInputFIFO.size() * sizeof(uint32_t));
 
     // EMU_LOG_DEBUG("outputData: {} {}", outputData.size(), emu::BytesToHex(outputData.data(), outputData.size() * 4));
 
-    mbedtls_aes_free(&ctx);
+    // TODO Properly update the IV
+    mIV[3] = __builtin_bswap32(__builtin_bswap32(mIV[3]) + mInputFIFO.size() / 4);
 
-    std::memcpy(mIV, iv.data(), iv.size());
     std::move(outputData.begin(), outputData.end(), std::back_inserter(mOutputFIFO));
 
     // Notify that data is in the output fifo

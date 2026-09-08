@@ -46,7 +46,7 @@ afl-fuzz -U -m none -i <input> -o <output> -- ./build/narwhal --headless <path t
 Start by installing the required dependencies:  
 **For Arch Linux**:  
 ```
-pacman -S gcc cmake capstone pybind11 sdl3 yaml-cpp mbedtls
+pacman -S gcc cmake capstone pybind11 sdl3 yaml-cpp botan
 ```
 
 Configure the project:  

@@ -3,9 +3,6 @@
 #include <Peripheral.hpp>
 #include <arm.hpp>
 
-#include <mbedtls/entropy.h>
-#include <mbedtls/ctr_drbg.h>
-
 namespace sam
 {
 
@@ -37,9 +34,6 @@ public:
     };
 
 protected:
-    mbedtls_entropy_context mEntropy;
-    mbedtls_ctr_drbg_context mCtrDrbg;
-
     CTRLA mCTRLA;
 
     uint32_t GetRandom();

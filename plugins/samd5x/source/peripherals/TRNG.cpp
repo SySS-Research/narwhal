@@ -1,25 +1,17 @@
 #include "TRNG.hpp"
 
-#include <mbedtls/entropy.h>
+#include <botan/system_rng.h>
 
 namespace sam
 {
 
 TRNG::TRNG() : Peripheral(),
-    mEntropy(),
-    mCtrDrbg(),
     mCTRLA(0)
 {
-    mbedtls_entropy_init(&mEntropy);
-    mbedtls_ctr_drbg_init(&mCtrDrbg);
-
-    mbedtls_ctr_drbg_seed(&mCtrDrbg, mbedtls_entropy_func, &mEntropy, nullptr, 0);
 }
 
 TRNG::~TRNG()
 {
-    mbedtls_ctr_drbg_free(&mCtrDrbg);
-    mbedtls_entropy_free(&mEntropy);
 }
 
 uint32_t TRNG::Read(uint32_t offset, uint32_t size)
@@ -55,7 +47,7 @@ void TRNG::Write(uint32_t offset, uint32_t size, uint32_t value)
 uint32_t TRNG::GetRandom()
 {
     uint32_t value;
-    mbedtls_ctr_drbg_random(&mCtrDrbg, reinterpret_cast<unsigned char*>(&value), sizeof(value));
+    Botan::system_rng().randomize(reinterpret_cast<uint8_t*>(&value), sizeof(value));
     return value;
 }
 
