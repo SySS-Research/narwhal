@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.hpp"
+#include <type_traits>
 
 namespace arm
 {
@@ -152,12 +153,12 @@ public:
     }
 
 #define REGISTER_BASE_BIT(__name__, __bit__)                              \
-    inline bool __name__() const { return !!(mValue & (1u << __bit__)); } \
+    [[nodiscard]] inline bool __name__() const { return !!(mValue & (1u << __bit__)); } \
     inline void set ## __name__() { mValue |= (1u << __bit__); }          \
     inline void clear ## __name__() { mValue &= ~(1u << __bit__); }
 
 #define REGISTER_BASE_RANGE(__name__, __end__, __start__)                                       \
-    inline value_type __name__() const {                                                          \
+    [[nodiscard]] inline value_type __name__() const {                                                          \
         constexpr value_type mask = ((1u << ((__end__) - (__start__) + 1)) - 1u) << (__start__);  \
         return (mValue & mask) >> (__start__);                                                  \
     }                                                                                           \
@@ -169,9 +170,11 @@ public:
 protected:
     T mValue;
 };
+static_assert(std::is_standard_layout_v<RegisterBaseT<>> == true);
 
 using RegisterBase = RegisterBaseT<>;
 using RegisterBase32 = RegisterBaseT<>;
+using RegisterBase16 = RegisterBaseT<uint16_t>;
 using RegisterBase8 = RegisterBaseT<uint8_t>;
 
 // See Arm®v7-M Architecture Reference Manual - B1.4.2 The special-purpose Program Status Registers, xPSR

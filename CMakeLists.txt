@@ -24,6 +24,7 @@ set(CMAKE_CXX_EXTENSIONS ON)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(CAPSTONE REQUIRED capstone)
+pkg_check_modules(LIBPCAP REQUIRED libpcap)
 
 set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 REQUIRED)
@@ -55,6 +56,7 @@ add_executable(narwhal
     "source/Window.cpp"
 
     "source/devices/EMMC.cpp"
+    "source/devices/PHY.cpp"
     "source/devices/SerialConsole.cpp"
     "source/devices/ST7789.cpp"
     "source/devices/devices.cpp"
@@ -94,6 +96,7 @@ add_executable(narwhal
 target_link_libraries(narwhal PUBLIC
     unicorn
     ${CAPSTONE_LIBRARIES}
+    ${LIBPCAP_LIBRARIES}
     elfio::elfio
     SDL3::SDL3
     yaml-cpp::yaml-cpp

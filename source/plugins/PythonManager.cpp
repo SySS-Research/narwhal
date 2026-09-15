@@ -123,11 +123,14 @@ PYBIND11_EMBEDDED_MODULE(emu, m)
     pybind11::class_<emu::Connector, pybind11::smart_holder>(m, "Connector")
         .def(pybind11::init([](const std::string& id, const std::string& type, ConnectorPythonCallbackFn callback) {
             auto connector = std::make_shared<emu::Connector>(id, type);
-            connector->SetCallback([callback](uint64_t arg0, uint64_t arg1, std::span<const uint8_t> dataArg) -> uint64_t {
-                pybind11::gil_scoped_acquire g{};
 
-                return callback(arg0, arg1, dataArg.data() ? pybind11::bytes(reinterpret_cast<const char*>(dataArg.data()), dataArg.size()) : pybind11::bytes());
-            });
+            if (callback) {
+                connector->SetCallback([callback](uint64_t arg0, uint64_t arg1, std::span<const uint8_t> dataArg) -> uint64_t {
+                    pybind11::gil_scoped_acquire g{};
+
+                    return callback(arg0, arg1, dataArg.data() ? pybind11::bytes(reinterpret_cast<const char*>(dataArg.data()), dataArg.size()) : pybind11::bytes());
+                });
+            }
             return connector;
         }), pybind11::arg("id"), pybind11::arg("type"), pybind11::arg("callback") = ConnectorPythonCallbackFn())
         .def("set_callback", [](emu::Connector& self, std::function<uint64_t(uint64_t, uint64_t, pybind11::bytes)> cb) {

@@ -292,6 +292,11 @@ void Emulator::EnableGDBStub()
     mGDBStub.Init(this);
 }
 
+void Emulator::GDBBreak()
+{
+    mGDBStub.Break();
+}
+
 void Emulator::EmulationThread(std::stop_token stoken)
 {
     while (!stoken.stop_requested()) {
@@ -367,10 +372,10 @@ void Emulator::OnUnmappedMemory(MemoryFlags type, uint32_t address, uint32_t siz
 {
     switch (type) {
     case MemoryFlags::Read:
-        EMU_LOG_WARN("Unmapped read at 0x{:08x}, size = {}", address, size);
+        EMU_LOG_MMIO("Unmapped read at 0x{:08x}, size = {}", address, size);
         break;
     case MemoryFlags::Write:
-        EMU_LOG_WARN("Unmapped write to 0x{:08x}, size = {}, value = 0x{:08x}", address, size, value);
+        EMU_LOG_MMIO("Unmapped write to 0x{:08x}, size = {}, value = 0x{:08x}", address, size, value);
         break;
     case MemoryFlags::Exec:
         // Unmapped fetch is always an error

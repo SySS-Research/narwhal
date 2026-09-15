@@ -98,6 +98,7 @@ public:
     }
 
     void EnableGDBStub();
+    void GDBBreak();
 
 protected:
     struct MMIORegion {

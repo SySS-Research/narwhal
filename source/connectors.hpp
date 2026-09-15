@@ -126,9 +126,57 @@ struct GPIOViewImpl
     }
 };
 
+// 2-wire Station Management Interface
+struct SMIViewImpl
+{
+    static constexpr std::string_view sTypeId = "emu.smi:v1";
+
+    using CallSignature = uint16_t(uint8_t reg, std::optional<uint16_t> data);
+
+    static inline uint16_t Serialize(emu::Connector& connector, uint8_t reg, std::optional<uint16_t> val)
+    {
+        if (val) {
+            return connector(uint64_t(reg), uint64_t((1llu << 32) | *val), {});
+        }
+
+        return connector(uint64_t(reg), 0, {});
+    }
+
+    static inline uint64_t Deserialize(uint64_t arg0, uint64_t arg1, std::span<const uint8_t> data,
+                                        std::function<CallSignature>& fn)
+    {
+        if (arg1 & (1llu << 32)) {
+            return fn(arg0, arg1 & 0xffff);
+        }
+
+        return fn(arg0, std::nullopt);
+    }
+};
+
+struct MIIDataViewImpl
+{
+    static constexpr std::string_view sTypeId = "emu.mii:v1";
+
+    using CallSignature = void(std::span<const uint8_t> data);
+
+    static inline void Serialize(emu::Connector& connector, std::span<const uint8_t> data)
+    {
+        connector(0, 0, data);
+    }
+
+    static inline uint64_t Deserialize(uint64_t arg0, uint64_t arg1, std::span<const uint8_t> data,
+                                        std::function<CallSignature>& fn)
+    {
+        fn(data);
+        return 0;
+    }
+};
+
 using USARTDataConnectorView = emu::ConnectorView<USARTDataViewImpl>;
 using MMCCommandConnectorView = emu::ConnectorView<MMCCommandViewImpl>;
 using MMCDataConnectorView = emu::ConnectorView<MMCDataViewImpl>;
 using ST7789CommandConnectorView = emu::ConnectorView<ST7789CommandViewImpl>;
 using ST7789DataConnectorView = emu::ConnectorView<ST7789DataViewImpl>;
 using GPIOConnectorView = emu::ConnectorView<GPIOViewImpl>;
+using SMIConnectorView = emu::ConnectorView<SMIViewImpl>;
+using MIIDataConnectorView = emu::ConnectorView<MIIDataViewImpl>;

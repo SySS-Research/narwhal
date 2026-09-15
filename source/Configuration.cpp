@@ -182,14 +182,14 @@ bool Configuration::LoadConnectors(YAML::Node connectorsConfig)
         auto fromConnectable = mIdentifiedConnectables.find(fromIdentifier);
         auto toConnectable = mIdentifiedConnectables.find(toIdentifier);
         if (fromConnectable == mIdentifiedConnectables.end() || toConnectable == mIdentifiedConnectables.end()) {
-            EMU_LOG_ERROR("Failed to find connector");
+            EMU_LOG_ERROR("Failed to find connectable {} -> {}", fromIdentifier, toIdentifier);
             return false;
         }
 
         auto fromConnector = fromConnectable->second->GetOutputConnectors().Get(fromPort);
         auto toConnector = toConnectable->second->GetInputConnectors().Get(toPort);
         if (!fromConnector || !toConnector) {
-            EMU_LOG_ERROR("Failed to find connector");
+            EMU_LOG_ERROR("Failed to find connector {} -> {}", fromPort, toPort);
             return false;
         }
 

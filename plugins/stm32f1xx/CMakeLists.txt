@@ -7,6 +7,10 @@ emu_add_plugin(
         stm32f1xx
     SOURCES
         source/main.cpp
+        source/peripherals/ADC.cpp
         source/peripherals/DMA.cpp
+        source/peripherals/ETH.cpp
+        source/peripherals/GPIO.cpp
+        source/peripherals/TIM.cpp
         source/peripherals/USART.cpp
 )
