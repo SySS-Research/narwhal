@@ -74,6 +74,15 @@ constexpr std::string_view armMSystemXml = R"(<?xml version="1.0"?>
 </feature>
 )";
 
+// Register list matching target.xml
+static const arm::Register registerList[] = {
+    arm::Register::R0, arm::Register::R1, arm::Register::R2, arm::Register::R3, 
+    arm::Register::R4, arm::Register::R5, arm::Register::R6, arm::Register::R7, 
+    arm::Register::R8, arm::Register::R9, arm::Register::R10, arm::Register::R11, 
+    arm::Register::R12, arm::Register::SP, arm::Register::LR, arm::Register::PC,
+    arm::Register::XPSR, arm::Register::MSP, arm::Register::PSP, 
+};
+
 } // namespace
 
 namespace emu
@@ -320,6 +329,9 @@ void GDBStub::HandlePacket(const std::string& cmd)
         case 'g':
             HandleReadGeneralRegisters();
             return;
+        case 'G':
+            HandleWriteGeneralRegisters(cmd);
+            return;
         case 'm':
             HandleReadMemory(cmd);
             return;
@@ -454,22 +466,27 @@ void GDBStub::HandleStopReason()
 
 void GDBStub::HandleReadGeneralRegisters()
 {
-    // Register list matching target.xml
-    static const arm::Register registers[] = {
-        arm::Register::R0, arm::Register::R1, arm::Register::R2, arm::Register::R3, 
-        arm::Register::R4, arm::Register::R5, arm::Register::R6, arm::Register::R7, 
-        arm::Register::R8, arm::Register::R9, arm::Register::R10, arm::Register::R11, 
-        arm::Register::R12, arm::Register::SP, arm::Register::LR, arm::Register::PC,
-        arm::Register::XPSR, arm::Register::MSP, arm::Register::PSP, 
-    };
-
     std::string response;
-    for (auto reg : registers) {
+    for (auto reg : registerList) {
         // Read registers and byteswap into native order
         response += std::format("{:08X}", __builtin_bswap32(mEmulator->GetRegister(reg)));
     }
 
     SendPacket(response);
+}
+
+void GDBStub::HandleWriteGeneralRegisters(const std::string& cmd)
+{
+    for (size_t i = 0; i < sizeof(registerList) / sizeof(registerList[0]); i++) {
+        auto reg = cmd.substr(1 + i * 8, 8);
+        if (reg == "xxxxxxxx") {
+            continue;
+        }
+
+        mEmulator->SetRegister(registerList[i], __builtin_bswap32(std::stoul(reg, nullptr, 16)));
+    }
+
+    SendPacket("OK");
 }
 
 void GDBStub::HandleReadMemory(const std::string& cmd)

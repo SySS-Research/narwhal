@@ -37,6 +37,7 @@ private:
     void HandleVPacket(const std::string& cmd);
     void HandleStopReason();
     void HandleReadGeneralRegisters();
+    void HandleWriteGeneralRegisters(const std::string& cmd);
     void HandleReadMemory(const std::string& cmd);
     void HandleInsertBreakpoint(const std::string& cmd);
     void HandleRemoveBreakpoint(const std::string& cmd);
