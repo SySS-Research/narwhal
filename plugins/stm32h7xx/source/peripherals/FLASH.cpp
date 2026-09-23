@@ -29,7 +29,7 @@ uint32_t FLASH::Read(uint32_t offset, uint32_t size)
         }
     };
 
-    EMU_LOG_WARN("Unknown read at offset 0x{:x}, size = {}", offset, size);
+    EMU_LOG_MMIO("Unknown read at offset 0x{:x}, size = {}", offset, size);
     return 0;
 }
 
@@ -41,7 +41,7 @@ void FLASH::Write(uint32_t offset, uint32_t size, uint32_t value)
             return;
     };
 
-    EMU_LOG_WARN("Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", offset, size, value);
+    EMU_LOG_MMIO("Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", offset, size, value);
 }
 
 } // namespace stm

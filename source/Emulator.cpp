@@ -351,7 +351,7 @@ uint32_t Emulator::OnMMIORegionRead(std::shared_ptr<MMIORegion> region, uint32_t
         return peripheral->Read(address - peripheral->GetStart(), size);
     }
 
-    EMU_LOG_WARN("Unknown MMIO Read 0x{:08x}, size = {}", address, size);
+    EMU_LOG_MMIO("Unknown MMIO Read 0x{:08x}, size = {}", address, size);
     return 0;
 }
 
@@ -364,7 +364,7 @@ void Emulator::OnMMIORegionWrite(std::shared_ptr<MMIORegion> region, uint32_t of
         return peripheral->Write(address - peripheral->GetStart(), size, value);
     }
 
-    EMU_LOG_WARN("Unknown MMIO Write 0x{:08x}, size = {}, value = 0x{:08x}", address, size, value);
+    EMU_LOG_MMIO("Unknown MMIO Write 0x{:08x}, size = {}, value = 0x{:08x}", address, size, value);
     return;
 }
 

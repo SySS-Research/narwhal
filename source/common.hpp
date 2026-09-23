@@ -19,6 +19,7 @@
 #define EMU_LOG_INFO(format, ...)  EMU_LOG(emu::LogType::Info,  format, ##__VA_ARGS__)
 #define EMU_LOG_WARN(format, ...)  EMU_LOG(emu::LogType::Warn,  format, ##__VA_ARGS__)
 #define EMU_LOG_ERROR(format, ...) EMU_LOG(emu::LogType::Error, format, ##__VA_ARGS__)
+#define EMU_LOG_MMIO               EMU_LOG_DEBUG
 
 #define EMU_FATAL(format, ...) {{ EMU_LOG_ERROR("FATAL: " format, ##__VA_ARGS__); exit(1); }}
 

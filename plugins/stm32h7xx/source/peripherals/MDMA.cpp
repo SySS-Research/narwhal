@@ -33,7 +33,7 @@ uint32_t MDMA::Read(uint32_t offset, uint32_t size)
         }
     }
 
-    EMU_LOG_WARN("Unknown read at offset 0x{:x}, size = {}", offset, size);
+    EMU_LOG_MMIO("Unknown read at offset 0x{:x}, size = {}", offset, size);
     return 0;
 }
 
@@ -48,7 +48,7 @@ void MDMA::Write(uint32_t offset, uint32_t size, uint32_t value)
         }
     }
 
-    EMU_LOG_WARN("Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", offset, size, value);
+    EMU_LOG_MMIO("Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", offset, size, value);
 }
 
 MDMA::Channel::Channel(MDMA* mdma, int channelIdx)
@@ -81,7 +81,7 @@ uint32_t MDMA::Channel::Read(uint32_t offset, uint32_t size)
             return mCDAR;
     };
 
-    EMU_LOG_WARN("(Channel {}) Unknown read at offset 0x{:x}, size = {}", mChannelIdx, offset, size);
+    EMU_LOG_MMIO("(Channel {}) Unknown read at offset 0x{:x}, size = {}", mChannelIdx, offset, size);
     return 0;
 }
 
@@ -111,7 +111,7 @@ void MDMA::Channel::Write(uint32_t offset, uint32_t size, uint32_t value)
             return;
     };
 
-    EMU_LOG_WARN("(Channel {}) Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", mChannelIdx, offset, size, value);
+    EMU_LOG_MMIO("(Channel {}) Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", mChannelIdx, offset, size, value);
 }
 
 void MDMA::Channel::PerformTransfer()

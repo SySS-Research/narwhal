@@ -22,7 +22,7 @@ uint32_t USART::Read(uint32_t offset, uint32_t size)
             return (1u << 7u) | (1u << 6u); // Hack, always set transfer complete and buffer empty
     };
 
-    EMU_LOG_WARN("Unknown read at offset 0x{:x}, size = {}", offset, size);
+    EMU_LOG_MMIO("Unknown read at offset 0x{:x}, size = {}", offset, size);
     return 0;
 }
 
@@ -35,7 +35,7 @@ void USART::Write(uint32_t offset, uint32_t size, uint32_t value)
             }
             break;
         default:
-            EMU_LOG_WARN("Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", offset, size, value);
+            EMU_LOG_MMIO("Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", offset, size, value);
             break;
     }
 }

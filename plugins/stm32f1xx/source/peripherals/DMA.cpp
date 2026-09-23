@@ -37,7 +37,7 @@ uint32_t DMA::Read(uint32_t offset, uint32_t size)
         }
     }
 
-    EMU_LOG_WARN("Unknown read at offset 0x{:x}, size = {}", offset, size);
+    EMU_LOG_MMIO("Unknown read at offset 0x{:x}, size = {}", offset, size);
     return 0;
 }
 
@@ -45,7 +45,7 @@ void DMA::Write(uint32_t offset, uint32_t size, uint32_t value)
 {
     switch (offset) {
         case 0x0: // ISR (read-only)
-            EMU_LOG_WARN("Writing to read-only register ISR");
+            EMU_LOG_MMIO("Writing to read-only register ISR");
             return;
         case 0x4: // IFCR
             // TODO
@@ -62,7 +62,7 @@ void DMA::Write(uint32_t offset, uint32_t size, uint32_t value)
         }
     }
 
-    EMU_LOG_WARN("Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", offset, size, value);
+    EMU_LOG_MMIO("Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", offset, size, value);
 }
 
 void DMA::SetChannelTransferComplete(int channel)
@@ -119,7 +119,7 @@ uint32_t DMA::Channel::Read(uint32_t offset, uint32_t size)
             return mCMAR;
     };
 
-    EMU_LOG_WARN("(Channel {}) Unknown read at offset 0x{:x}, size = {}", mChannelIdx, offset, size);
+    EMU_LOG_MMIO("(Channel {}) Unknown read at offset 0x{:x}, size = {}", mChannelIdx, offset, size);
     return 0;
 }
 
@@ -144,7 +144,7 @@ void DMA::Channel::Write(uint32_t offset, uint32_t size, uint32_t value)
             return;
     };
 
-    EMU_LOG_WARN("(Channel {}) Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", mChannelIdx, offset, size, value);
+    EMU_LOG_MMIO("(Channel {}) Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", mChannelIdx, offset, size, value);
 }
 
 void DMA::Channel::PerformTransfer()
