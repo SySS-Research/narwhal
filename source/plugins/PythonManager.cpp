@@ -101,7 +101,15 @@ PYBIND11_EMBEDDED_MODULE(emu, m)
         }, pybind11::arg("address"), pybind11::arg("data"))
         .def("add_breakpoint", &emu::Emulator::AddBreakpoint, pybind11::arg("address"), pybind11::arg("size"), pybind11::arg("callback"))
         .def("remove_breakpoint", &emu::Emulator::RemoveBreakpoint, pybind11::arg("handle"))
-        .def("get_symbol_address", &emu::Emulator::GetSymbolAddress, pybind11::arg("name"));
+        .def("get_symbol_address", &emu::Emulator::GetSymbolAddress, pybind11::arg("name"))
+        .def("save_state", &emu::Emulator::SaveState)
+        .def("restore_state", &emu::Emulator::RestoreState)
+        .def("save_and_store_state", &emu::Emulator::SaveAndStoreState, pybind11::arg("path"))
+        .def("load_state", &emu::Emulator::LoadState, pybind11::arg("path"))
+        .def("fuzz_iter", [](emu::Emulator& self, std::function<void(void)> callback) -> pybind11::bytes {
+            auto input = self.FuzzIter(callback);
+            return pybind11::bytes(reinterpret_cast<const char*>(input.data()), input.size());
+        });
 
     m.def("get_emulator", []() -> emu::Emulator* {
         return emu::Application::Get()->GetEmulator();

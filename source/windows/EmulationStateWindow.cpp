@@ -24,6 +24,14 @@ void EmulationStateWindow::Draw()
         }
     }
 
+    if (ImGui::Button("Save State")) {
+        emulator->SaveState();
+    }
+
+    if (ImGui::Button("Restore State")) {
+        emulator->RestoreState([](){});
+    }
+
     ImGui::Text("R0 = 0x%08x", emulator->GetRegister(arm::Register::R0));
     ImGui::Text("R1 = 0x%08x", emulator->GetRegister(arm::Register::R1));
     ImGui::Text("R2 = 0x%08x", emulator->GetRegister(arm::Register::R2));

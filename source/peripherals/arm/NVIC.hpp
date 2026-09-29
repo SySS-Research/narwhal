@@ -17,6 +17,9 @@ public:
     virtual uint32_t Read(uint32_t offset, uint32_t size) override;
     virtual void Write(uint32_t offset, uint32_t size, uint32_t value) override;
 
+    virtual void SaveState(State& state) override;
+    virtual void RestoreState(State& state) override;
+
     void ProcessPendingExceptions();
 
     void HandleException(arm::Exception exception);

@@ -178,6 +178,42 @@ void ETH::Write(uint32_t offset, uint32_t size, uint32_t value)
     }
 }
 
+void ETH::SaveState(emu::State& state)
+{
+    // TODO
+    state << mRxSuspended;
+
+    state << mMACCR;
+    state << mMACMIIAR;
+    state << mMACMIIDR;
+
+    state << mDMARDLAR;
+    state << mDMATDLAR;
+    state << mDMASR;
+    state << mDMAOMR;
+    state << mDMAIER;
+    state << mDMACHTDR;
+    state << mDMACHRDR;
+}
+
+void ETH::RestoreState(emu::State& state)
+{
+    // TODO
+    state >> mRxSuspended;
+
+    state >> mMACCR;
+    state >> mMACMIIAR;
+    state >> mMACMIIDR;
+
+    state >> mDMARDLAR;
+    state >> mDMATDLAR;
+    state >> mDMASR;
+    state >> mDMAOMR;
+    state >> mDMAIER;
+    state >> mDMACHTDR;
+    state >> mDMACHRDR;
+}
+
 void ETH::HandleMACMIIAR()
 {
     // Check if we need to do something

@@ -18,6 +18,11 @@ public:
     virtual uint32_t Read(uint32_t offset, uint32_t size) override;
     virtual void Write(uint32_t offset, uint32_t size, uint32_t value) override;
 
+    virtual void SaveState(emu::State& state) override;
+    virtual void RestoreState(emu::State& state) override;
+
+    void SetEnabled(bool enabled);
+
     // Returns true if there is a pending tick interrupt
     bool Tick();
 
@@ -42,6 +47,8 @@ protected:
     uint32_t mValue;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> mLastTick;
+
+    bool mEnabled;
 };
 
 } // namespace emu

@@ -1,6 +1,7 @@
 .vscode/
 build/
 afl_output/
+afl_sync/
 imgui.ini
 *.elf
 *.svd

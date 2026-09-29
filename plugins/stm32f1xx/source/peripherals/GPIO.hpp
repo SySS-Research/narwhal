@@ -16,6 +16,9 @@ public:
     virtual uint32_t Read(uint32_t offset, uint32_t size) override;
     virtual void Write(uint32_t offset, uint32_t size, uint32_t value) override;
 
+    virtual void SaveState(emu::State& state) override;
+    virtual void RestoreState(emu::State& state) override;
+
 protected:
     std::vector<GPIOConnectorView> mGPIOInputConnectors;
     std::vector<GPIOConnectorView> mGPIOOutputConnectors;

@@ -91,6 +91,16 @@ int Application::Run(const argparse::ArgumentParser& args)
         peripheral->Init();
     }
 
+    // Load state before starting plugins, so they can already make use of it
+    if (auto state = args.present("--state")) {
+        if (!mEmulator->LoadState(*state)) {
+            EMU_LOG_ERROR("Failed to load state\n");
+            return 1;
+        }
+
+        mEmulator->RestoreState([](){});
+    }
+
     PluginManager::StartPlugins(mEmulator.get());
     PythonManager::StartPlugins(mEmulator.get());
 

@@ -5,7 +5,11 @@ namespace emu
 {
 
 SysTick::SysTick() : Peripheral(),
- mCSR(0)
+ mCSR(0),
+ mLoad(),
+ mValue(),
+ mLastTick(),
+ mEnabled(true)
 {
     SetBounds(0xE000E010, 0xE000E0FF);
 }
@@ -18,7 +22,7 @@ void SysTick::Update()
 {
     Peripheral::Update();
 
-    if (Tick()) {
+    if (mEnabled && Tick()) {
         mEmulator->SetExceptionPending(arm::Exception::SysTick);
     }
 }
@@ -59,6 +63,28 @@ void SysTick::Write(uint32_t offset, uint32_t size, uint32_t value)
     };
 
     EMU_LOG_MMIO("Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", offset, size, value);
+}
+
+void SysTick::SaveState(emu::State& state)
+{
+    state << mCSR;
+    state << mLoad;
+    state << mValue;
+}
+
+void SysTick::RestoreState(emu::State& state)
+{
+    state >> mCSR;
+    state >> mLoad;
+    state >> mValue;
+
+    // Let's skip a tick, not great but should be fine
+    mLastTick = std::chrono::high_resolution_clock::now();
+}
+
+void SysTick::SetEnabled(bool enabled)
+{
+    mEnabled = enabled;    
 }
 
 bool SysTick::Tick()

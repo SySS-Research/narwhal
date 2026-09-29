@@ -7,6 +7,7 @@
 #include "capstone.hpp"
 #include "GDBStub.hpp"
 #include "CoverageCollector.hpp"
+#include "State.hpp"
 
 #include <map>
 #include <unordered_map>
@@ -18,6 +19,7 @@ namespace emu
 
 class NVIC;
 class SCB;
+class SysTick;
 
 class Emulator
 {
@@ -80,6 +82,14 @@ public:
     void AddSymbol(const std::string& name, uint32_t address);
     std::optional<uint32_t> GetSymbolAddress(const std::string& name) const;
 
+    void SaveState();
+    void RestoreState(std::function<void(void)> callback);
+
+    void SaveAndStoreState(std::string path);
+    bool LoadState(std::string path);
+
+    std::span<const uint8_t> FuzzIter(std::function<void(void)> callback);
+
     // TODO do we want to expose the engine just like this?
     UnicornEngine& GetEngine() { return mEngine; };
 
@@ -128,6 +138,9 @@ private:
     void OnException(arm::Exception exception);
     void OnBKPT();
 
+    void SaveStateImpl();
+    void RestoreStateImpl();
+
 protected:
     UnicornEngine mEngine;
     std::jthread mEmulationThread;
@@ -137,12 +150,20 @@ protected:
 
     std::vector<std::shared_ptr<MMIORegion>> mMMIORegions;
     std::vector<UnmanagedMMIO> mUnmanagedMMIO;
+    std::vector<std::pair<uint32_t, uint32_t>> mMemoryRegions;
 
     // CPU peripherals
     std::shared_ptr<NVIC> mNVIC;
     std::shared_ptr<SCB> mSCB;
+    std::shared_ptr<SysTick> mSysTick;
 
     std::map<std::string, uint32_t> mSymbols;
+
+    std::atomic_bool mPendingStateSave;
+    std::atomic_bool mPendingStateRestore;
+    std::string mStateStorePath;
+    State mSerializedState;
+    std::function<void(void)> mStateChangedCallback;
 
     GDBStub mGDBStub;
 

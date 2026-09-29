@@ -69,6 +69,8 @@ bool Configuration::LoadMemoryMapConfig(YAML::Node memorymapConfig)
             flags = emu::MemoryFlags::Read | emu::MemoryFlags::Exec;
         } else if (type == "mmio") {
             flags = emu::MemoryFlags::MMIO;
+        } else if (type == "fuzz") {
+            flags = emu::MemoryFlags::Read | emu::MemoryFlags::Write | emu::MemoryFlags::Fuzz;
         } else {
             EMU_LOG_ERROR("Unknown memory type '{}'", type.c_str());
             return false;

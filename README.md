@@ -6,7 +6,7 @@ Narwhal is a modular emulation framework targeting Armv7-M-based microcontroller
 
 ```
 $ ./build/narwhal --help
-Usage: narwhal [--help] [--version] [--loglevel VAR] [--headless] [--trace] [--gdbstub] [--ezcov VAR] [--drcov VAR] [--generate-pystub VAR] config
+Usage: narwhal [--help] [--version] [--loglevel VAR] [--headless] [--trace] [--gdbstub] [--ezcov VAR] [--drcov VAR] [--generate-pystub VAR] [--state VAR] config
 
 Positional arguments:
   config             Path to the configuration file to use 
@@ -20,7 +20,8 @@ Optional arguments:
   --gdbstub          Start the emulator with the debugger (halts at the first instruction and waits for a connection) 
   --ezcov            Output EZCOV coverage to file. 
   --drcov            Output DRCOV coverage to file. 
-  --generate-pystub  Generate python stubs to folder.
+  --generate-pystub  Generate python stubs to folder. 
+  --state            Load state from file. (Experimental)
 ```
 
 ## Getting started
@@ -46,7 +47,12 @@ afl-fuzz -U -m none -i <input> -o <output> -- ./build/narwhal --headless <path t
 Start by installing the required dependencies:  
 **For Arch Linux**:  
 ```
-pacman -S gcc cmake capstone pybind11 sdl3 yaml-cpp botan
+pacman -S --needed gcc cmake make pkgconf capstone pybind11 sdl3 yaml-cpp botan afl++ libpcap
+```
+
+**For Ubuntu 26.04**:  
+```
+apt install build-essential cmake pkgconf libcapstone-dev libpcap-dev pybind11-dev libsdl3-dev libyaml-cpp-dev libbotan-3-dev afl++
 ```
 
 Configure the project:  

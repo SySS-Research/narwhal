@@ -41,6 +41,9 @@ int main(int argc, char const* argv[])
     program.add_argument("--generate-pystub")
         .help("Generate python stubs to folder.");
 
+    program.add_argument("--state")
+        .help("Load state from file. (Experimental)");
+
     try {
         program.parse_args(argc, argv);
     }

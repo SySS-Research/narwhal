@@ -51,6 +51,7 @@ add_executable(narwhal
     "source/GDBStub.cpp"
     "source/Peripheral.cpp"
     "source/Registry.cpp"
+    "source/State.cpp"
     "source/UnicornEngine.cpp"
     "source/UserInterface.cpp"
     "source/Window.cpp"

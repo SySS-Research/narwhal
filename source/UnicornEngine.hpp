@@ -2,6 +2,7 @@
 
 #include "common.hpp"
 #include "arm.hpp"
+#include "State.hpp"
 
 #include <unicorn/unicorn.h>
 #include <functional>
@@ -42,6 +43,9 @@ public:
     void AddWatchpoint(uint32_t address, uint32_t size, WatchpointType type, std::function<void(void)> callback);
     void RemoveWatchpoint(uint32_t address, uint32_t size, WatchpointType type);
 
+    bool SaveState(State& state);
+    bool RestoreState(State& state);
+
     void OnPeriodicUpdate(std::function<void(void)> callback)
     {
         mPeriodicUpdateCallback = std::move(callback);
@@ -74,7 +78,12 @@ public:
 
     void OnBKPT(std::function<void()> callback)
     {
-        mBKPTCallback = callback;
+        mBKPTCallback = std::move(callback);
+    }
+
+    void OnCmpCov(std::function<void(uint32_t, uint32_t, uint32_t, uint32_t)> callback)
+    {
+        mCmpCovCallback = std::move(callback);
     }
 
 protected:
@@ -85,6 +94,7 @@ protected:
     uc_hook mBlockHook;
     uc_hook mCodeHook;
     uc_hook mIntrHook;
+    uc_hook mTcgHook;
 
     std::atomic<bool> mPendingStop;
 
@@ -95,6 +105,7 @@ protected:
     std::function<void(arm::Exception)> mExceptionCallback;
     std::function<void(arm::EXC_RETURN)> mExceptionReturnCallback;
     std::function<void()> mBKPTCallback;
+    std::function<void(uint32_t, uint32_t, uint32_t, uint32_t)> mCmpCovCallback;
     std::vector<std::unique_ptr<MMIOReadCallbackFn>> mMMIOReadCallbacks;
     std::vector<std::unique_ptr<MMIOWriteCallbackFn>> mMMIOWriteCallbacks;
 

@@ -152,11 +152,17 @@ void PHY::OnMIIData(std::span<const uint8_t> data)
     hdr.caplen = data.size();
     pcap_dump((u_char*) mPCAPDumper, &hdr, data.data());
 
-    write(mTapFd, data.data(), data.size());
+    if (mTapFd >= 0) {
+        write(mTapFd, data.data(), data.size());
+    }
 }
 
 void PHY::UpdateTap()
 {
+    if (mTapFd < 0) {
+        return;
+    }
+
     std::vector<uint8_t> buf(0x1000);
     const int len = read(mTapFd, buf.data(), buf.size());
     if (len > 0) {

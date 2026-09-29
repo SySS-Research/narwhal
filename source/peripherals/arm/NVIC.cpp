@@ -123,6 +123,26 @@ void NVIC::Write(uint32_t offset, uint32_t size, uint32_t value)
     EMU_LOG_MMIO("Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", offset, size, value);
 }
 
+void NVIC::SaveState(State& state)
+{
+    state << mHandlerMode;
+    state << mHasPendingExceptions;
+    state << mExceptionEnabled;
+    state << mExceptionPending;
+    state << mExceptionActive;
+    state << mExceptionPriorities;
+}
+
+void NVIC::RestoreState(State& state)
+{
+    state >> mHandlerMode;
+    state >> mHasPendingExceptions;
+    state >> mExceptionEnabled;
+    state >> mExceptionPending;
+    state >> mExceptionActive;
+    state >> mExceptionPriorities;
+}
+
 void NVIC::ProcessPendingExceptions()
 {
     // Optimization

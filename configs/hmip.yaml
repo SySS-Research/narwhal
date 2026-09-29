@@ -16,6 +16,10 @@ memorymap:
   - type: ram # HMIP bootloader writes to flash
     start: 0x08000000
     end: 0x0803FFFF
+  # special fuzzing data area
+  - type: fuzz
+    start: 0x20100000
+    end:   0x2011FFFF
 
 loaders:
   - id: emu.loader.bin

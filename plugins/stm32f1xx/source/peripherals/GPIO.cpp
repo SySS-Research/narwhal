@@ -89,4 +89,21 @@ void GPIO::Write(uint32_t offset, uint32_t size, uint32_t value)
     EMU_LOG_MMIO("Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", offset, size, value);
 }
 
+void GPIO::SaveState(emu::State& state)
+{
+    state << mIDR.load();
+    state << mODR.load();
+}
+
+void GPIO::RestoreState(emu::State& state)
+{
+    uint32_t i;
+
+    state >> i;
+    mIDR.store(i);
+
+    state >> i;
+    mODR.store(i);
+}
+
 } // namespace stm

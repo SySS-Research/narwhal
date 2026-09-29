@@ -134,8 +134,10 @@ namespace emu
 UnicornEngine::UnicornEngine(arm::CPUModel cpu)
  : mEngine(nullptr),
  mUnmappedMemoryHook(),
+ mBlockHook(),
  mCodeHook(),
  mIntrHook(),
+ mTcgHook(),
  mPendingStop(false),
  mPeriodicUpdateCallback(),
  mUnmappedMemoryCallback(),
@@ -158,6 +160,13 @@ UnicornEngine::UnicornEngine(arm::CPUModel cpu)
     err = uc_ctl_set_cpu_model(mEngine, ConvertCPUModelToUCCPU(cpu));
     if (err != UC_ERR_OK) {
         EMU_FATAL("Failed on uc_ctl_set_cpu_model() with error returned: {} ({})", static_cast<int>(err), uc_strerror(err));
+        return;
+    }
+
+    // Only save CPU context, memory context is not serializable
+    err = uc_ctl_context_mode(mEngine, UC_CTL_CONTEXT_CPU);
+    if (err != UC_ERR_OK) {
+        EMU_FATAL("Failed on uc_ctl_context_mode() with error returned: {} ({})", static_cast<int>(err), uc_strerror(err));
         return;
     }
 
@@ -200,6 +209,21 @@ UnicornEngine::UnicornEngine(arm::CPUModel cpu)
 
             _this->mBlockCallback(static_cast<uint32_t>(address), size);
         })), this, 1, 0 // Always call hook
+    );
+    if (err != UC_ERR_OK) {
+        EMU_FATAL("Failed to add necessary hook: {} ({})", static_cast<int>(err), uc_strerror(err));
+        return;
+    }
+
+    err = uc_hook_add(mEngine, &mTcgHook,
+        UC_HOOK_TCG_OPCODE,
+        reinterpret_cast<void*>(static_cast<uc_hook_tcg_sub_t>([](uc_engine *uc, uint64_t address, uint64_t arg1,
+                                                                  uint64_t arg2, uint32_t size, void *userData) -> void {
+            UnicornEngine* _this = static_cast<UnicornEngine*>(userData);
+
+            _this->mCmpCovCallback(static_cast<uint32_t>(address), static_cast<uint32_t>(arg1), static_cast<uint32_t>(arg2), size);
+        })), this, 1, 0, // Always call hook
+        UC_TCG_OP_SUB, (UC_TCG_OP_FLAG_CMP | UC_TCG_OP_FLAG_DIRECT)
     );
     if (err != UC_ERR_OK) {
         EMU_FATAL("Failed to add necessary hook: {} ({})", static_cast<int>(err), uc_strerror(err));
@@ -457,6 +481,52 @@ void UnicornEngine::RemoveWatchpoint(uint32_t address, uint32_t size, Watchpoint
             it++;
         }
     }
+}
+
+bool UnicornEngine::SaveState(State& state)
+{
+    size_t contextSize = uc_context_size(mEngine);
+    uc_context* context;
+
+    if (uc_context_alloc(mEngine, &context) != UC_ERR_OK) {
+        EMU_LOG_WARN("uc_context_alloc fail");
+        return false;
+    }
+
+    if (uc_context_save(mEngine, context) != UC_ERR_OK) {
+        EMU_LOG_WARN("uc_context_save fail");
+        uc_context_free(context);
+        return false;
+    }
+
+    // Hacky, it is important that the unicorn state stays serializable for this
+    state.Write({reinterpret_cast<std::byte*>(context), contextSize});
+
+    uc_context_free(context);
+    return true;
+}
+
+bool UnicornEngine::RestoreState(State& state)
+{
+    size_t contextSize = uc_context_size(mEngine);
+    uc_context* context;
+
+    if (uc_context_alloc(mEngine, &context) != UC_ERR_OK) {
+        EMU_LOG_WARN("uc_context_alloc fail");
+        return false;
+    }
+
+    // Hacky, it is important that the unicorn state stays serializable for this
+    state.Read({reinterpret_cast<std::byte*>(context), contextSize});
+
+    if (uc_context_restore(mEngine, context) != UC_ERR_OK) {
+        EMU_LOG_WARN("uc_context_restore fail");
+        uc_context_free(context);
+        return false;
+    }
+
+    uc_context_free(context);
+    return true;
 }
 
 void UnicornEngine::CreateMissingWatchpointHooks()

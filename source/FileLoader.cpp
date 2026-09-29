@@ -8,22 +8,10 @@
 
 namespace
 {
-
-std::vector<uint8_t> HexStringToBytes(const std::string& hexstring)
-{
-    std::vector<uint8_t> bytes;
-
-    for (size_t i = 0; i < hexstring.size(); i += 2) {
-        bytes.push_back(std::stoul(hexstring.substr(i, 2), nullptr, 16));
-    }
-
-    return bytes;
-}
-
 uint8_t CalculateSRECChecksum(const std::string& hexstring)
 {
     uint8_t checksum = 0;
-    auto bytes = HexStringToBytes(hexstring);
+    auto bytes = emu::HexToBytes(hexstring);
 
     for (auto b : bytes) {
         checksum += b;
@@ -100,7 +88,7 @@ bool FileLoader::LoadElf(emu::Emulator* emulator, const std::string& path)
             const ELFIO::symbol_section_accessor symbols( reader, psec );
             for (unsigned int j = 0; j < symbols.get_symbols_num(); ++j) {
                 std::string name;
-                ELFIO::Elf64_Addr value;
+                ELFIO::Elf64_Addr value = 0;
                 ELFIO::Elf_Xword size;
                 unsigned char bind;
                 unsigned char type;
@@ -191,7 +179,7 @@ bool FileLoader::LoadSREC(emu::Emulator* emulator, const std::string& path, uint
 
         // Read data
         auto dataChars = byteCount * 2;
-        auto data = HexStringToBytes(line.substr(4 + addressChars, dataChars));
+        auto data = emu::HexToBytes(line.substr(4 + addressChars, dataChars));
 
         // Handle record
         switch (type) {

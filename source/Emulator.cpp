@@ -4,6 +4,13 @@
 
 #include <utility>
 
+namespace
+{
+
+constexpr uint32_t kStateCookie = 0xA1B2C3D4;
+
+} // namespace
+
 namespace emu
 {
 
@@ -14,9 +21,15 @@ Emulator::Emulator()
  mRunningCond(),
  mRunningMutex(),
  mMMIORegions(),
+ mUnmanagedMMIO(),
  mNVIC(),
  mSCB(),
+ mSysTick(),
  mSymbols(),
+ mPendingStateSave(false),
+ mPendingStateRestore(false),
+ mSerializedState(),
+ mStateChangedCallback(),
  mGDBStub(3000),
  mTraceEnabled(false),
  mCoverageCollector(nullptr)
@@ -55,6 +68,9 @@ Emulator::Emulator()
     mEngine.OnBKPT([this](){
         OnBKPT();
     });
+    mEngine.OnCmpCov([this](uint32_t address, uint32_t arg1, uint32_t arg2, uint32_t size){
+        afl::UpdateCmpCov(address, arg1, arg2, size);
+    });
 
     // Map system control space
     // See Arm®v7-M Architecture Reference Manual - B3.2 System Control Space (SCS)
@@ -65,9 +81,11 @@ Emulator::Emulator()
     // Register private peripherals
     RegisterPeripheral((mNVIC = std::make_shared<NVIC>()));
     RegisterPeripheral((mSCB = std::make_shared<SCB>()));
+    RegisterPeripheral((mSysTick = std::make_shared<SysTick>()));
+
     // TODO systick messes with fuzzing coverage
-    if (!afl::ForkserverRunning()) {
-        RegisterPeripheral(std::make_shared<SysTick>());
+    if (afl::ForkserverRunning()) {
+        mSysTick->SetEnabled(false);
     }
 
     // Make sure emulation thread is only started once everything is set up
@@ -122,7 +140,12 @@ uint32_t Emulator::GetRegister(arm::Register reg)
 void Emulator::MapMemory(uint32_t address, uint32_t size, MemoryFlags flags)
 {
     if (!(flags & MemoryFlags::MMIO)) { // Map regular memory
-        mEngine.MapMemory(address, size, flags & ~MemoryFlags::MMIO);
+        mEngine.MapMemory(address, size, flags & ~(MemoryFlags::MMIO | MemoryFlags::Fuzz));
+
+        // Keep track for state serialization
+        if (!!(flags & MemoryFlags::Write) && !(flags & MemoryFlags::Fuzz)) {
+            mMemoryRegions.push_back({address, size});
+        }
     } else { // Map MMIO region
         auto region = std::make_shared<MMIORegion>();
         region->start = address;
@@ -287,6 +310,56 @@ std::optional<uint32_t> Emulator::GetSymbolAddress(const std::string& name) cons
     return symbol->second;
 }
 
+
+void Emulator::SaveState()
+{
+    mPendingStateSave = true;
+    mEngine.Stop();
+}
+
+void Emulator::RestoreState(std::function<void(void)> callback)
+{
+    mStateChangedCallback = std::move(callback);
+
+    // TODO this is racey, since the engine might still run when mIsRunning is false
+    if (!mIsRunning) {
+        RestoreStateImpl();
+        return;
+    }
+
+    mPendingStateRestore = true;
+    mEngine.Stop();
+}
+
+void Emulator::SaveAndStoreState(std::string path)
+{
+    mStateStorePath = std::move(path);
+    SaveState();
+}
+
+bool Emulator::LoadState(std::string path)
+{
+    return mSerializedState.Load(path);
+}
+
+std::span<const uint8_t> Emulator::FuzzIter(std::function<void(void)> callback)
+{
+    if (!afl::ForkserverRunning()) {
+        return {};
+    }
+
+    // Notify parent process of run
+    afl::EndLoop();
+
+    // Restore loaded state
+    RestoreState(callback);
+
+    // Wait until the parent process has more data
+    afl::StartLoop();
+
+    return afl::GetFuzzData();
+}
+
 void Emulator::EnableGDBStub()
 {
     mGDBStub.Init(this);
@@ -308,6 +381,16 @@ void Emulator::EmulationThread(std::stop_token stoken)
         lk.unlock();
 
         mEngine.Run();
+
+        if (mPendingStateSave) {
+            SaveStateImpl();
+            mPendingStateSave = false;
+        }
+
+        if (mPendingStateRestore) {
+            RestoreStateImpl();
+            mPendingStateRestore = false;
+        }
     }
 }
 
@@ -370,16 +453,18 @@ void Emulator::OnMMIORegionWrite(std::shared_ptr<MMIORegion> region, uint32_t of
 
 void Emulator::OnUnmappedMemory(MemoryFlags type, uint32_t address, uint32_t size, uint32_t value)
 {
+    uint32_t pc = GetRegister(arm::Register::PC);
+
     switch (type) {
     case MemoryFlags::Read:
-        EMU_LOG_MMIO("Unmapped read at 0x{:08x}, size = {}", address, size);
+        EMU_LOG_WARN("Unmapped read at 0x{:08x}, size = {}, pc = 0x{:08x}", address, size, pc);
         break;
     case MemoryFlags::Write:
-        EMU_LOG_MMIO("Unmapped write to 0x{:08x}, size = {}, value = 0x{:08x}", address, size, value);
+        EMU_LOG_WARN("Unmapped write to 0x{:08x}, size = {}, value = 0x{:08x}, pc = 0x{:08x}", address, size, value, pc);
         break;
     case MemoryFlags::Exec:
         // Unmapped fetch is always an error
-        EMU_LOG_ERROR("Unmapped fetch at 0x{:08x}, size = {}", address, size);
+        EMU_LOG_ERROR("Unmapped fetch at 0x{:08x}, size = {}, pc = 0x{:08x}", address, size, pc);
         mGDBStub.Break();
         break;
     default:
@@ -388,6 +473,11 @@ void Emulator::OnUnmappedMemory(MemoryFlags type, uint32_t address, uint32_t siz
 
     // Break on unmapped read/write
     // mGDBStub.Break();
+
+    // Unmapped read/write might happen on null pointer derefs, let's treat it as a crash
+    if (afl::ForkserverRunning()) {
+        afl::RaiseCrash();
+    }
 }
 
 void Emulator::OnCode(uint32_t address, uint32_t size)
@@ -430,6 +520,94 @@ void Emulator::OnBKPT()
     EMU_LOG_WARN("BKPT instruction at address 0x{:08x}", GetRegister(arm::Register::PC));
 
     mGDBStub.Break();
+}
+
+void Emulator::SaveStateImpl()
+{
+    // Save new state
+    mSerializedState.SetPosition(0);
+
+    // Save state of unicorn
+    mEngine.SaveState(mSerializedState);
+
+    // Place a cookie value between every state
+    mSerializedState << kStateCookie;
+
+    // Save state of memory
+    for (auto& mem : mMemoryRegions) {
+        std::vector<std::byte> buf(mem.second);
+        mEngine.ReadMemory(mem.first, buf.data(), buf.size());
+        mSerializedState.Write(buf);
+
+        // Place a cookie value between every state
+        mSerializedState << kStateCookie;
+    }
+
+    mNVIC->SaveState(mSerializedState);
+    mSCB->SaveState(mSerializedState);
+    mSysTick->SaveState(mSerializedState);
+    for (auto& region : mMMIORegions) {
+        for (auto& peripheral : region->peripherals) {
+            peripheral->SaveState(mSerializedState);
+            
+            // Place a cookie value between every state
+            mSerializedState << kStateCookie;
+        }
+    }
+
+    if (!mStateStorePath.empty()) {
+        mSerializedState.Store(mStateStorePath);
+        mStateStorePath.clear();
+    }
+}
+
+void Emulator::RestoreStateImpl()
+{
+    mSerializedState.SetPosition(0);
+
+    // Restore state of unicorn
+    mEngine.RestoreState(mSerializedState);
+
+    // Make sure state cookie matches
+    uint32_t cookie;
+    mSerializedState >> cookie;
+
+    if (cookie != kStateCookie) {
+        EMU_FATAL("Unicorn state corrupted");
+    }
+
+    // Restore state of memory
+    for (auto& mem : mMemoryRegions) {
+        std::vector<std::byte> buf(mem.second);
+        mSerializedState.Read(buf);
+        mEngine.WriteMemory(mem.first, buf.data(), buf.size());
+
+        // Make sure state cookie matches
+        mSerializedState >> cookie;
+
+        if (cookie != kStateCookie) {
+            EMU_FATAL("Memory state corrupted");
+        }
+    }
+
+    // Restore peripheral state
+    mNVIC->RestoreState(mSerializedState);
+    mSCB->RestoreState(mSerializedState);
+    mSysTick->RestoreState(mSerializedState);
+    for (auto& region : mMMIORegions) {
+        for (auto& peripheral : region->peripherals) {
+            peripheral->RestoreState(mSerializedState);
+
+            // Make sure state cookie matches
+            mSerializedState >> cookie;
+
+            if (cookie != kStateCookie) {
+                EMU_FATAL("Peripheral state corrupted");
+            }
+        }
+    }
+
+    mStateChangedCallback();
 }
 
 } // namespace emu

@@ -2,6 +2,7 @@
 
 #include "common.hpp"
 #include "Connector.hpp"
+#include "State.hpp"
 
 namespace emu
 {
@@ -18,6 +19,9 @@ public:
     virtual void Update() { }
     virtual uint32_t Read(uint32_t offset, uint32_t size) = 0;
     virtual void Write(uint32_t offset, uint32_t size, uint32_t value) = 0;
+
+    virtual void SaveState(State& state) { }
+    virtual void RestoreState(State& state) { }
 
     void SetBounds(uint32_t start, uint32_t end);
 

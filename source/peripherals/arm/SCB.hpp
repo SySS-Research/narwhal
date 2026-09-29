@@ -14,6 +14,9 @@ public:
     virtual uint32_t Read(uint32_t offset, uint32_t size) override;
     virtual void Write(uint32_t offset, uint32_t size, uint32_t value) override;
 
+    virtual void SaveState(emu::State& state) override;
+    virtual void RestoreState(emu::State& state) override;
+    
     uint32_t GetVTOR() const { return mVTOR; };
     void SetVTOR(uint32_t vtor) { mVTOR = vtor; };
 

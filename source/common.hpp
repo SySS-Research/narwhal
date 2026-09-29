@@ -116,6 +116,9 @@ enum class MemoryFlags {
 
     // Special flag for Emulator class to allow registering memory-mapped peripherals in a region
     MMIO    = (1u << 3),
+
+    // Special flag to map memory which should only by used to fuzz (excluded from states)
+    Fuzz    = (1u << 4),
 };
 
 template <class E>
@@ -140,6 +143,17 @@ T slice_bitset(const std::bitset<N>& bitset, size_t offset)
 
 std::vector<uint8_t> HexToBytes(const std::string& hex);
 std::string BytesToHex(const void* data, size_t size);
+
+class NonCopyable
+{
+protected:
+    constexpr NonCopyable() = default;
+    ~NonCopyable() = default;
+
+private:
+    NonCopyable(const NonCopyable &) = delete;
+    void operator=(const NonCopyable &) = delete;
+};
 
 } // namespace emu
 

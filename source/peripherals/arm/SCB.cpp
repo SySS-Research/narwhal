@@ -113,4 +113,18 @@ void SCB::Write(uint32_t offset, uint32_t size, uint32_t value)
     EMU_LOG_MMIO("Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", offset, size, value);
 }
 
+void SCB::SaveState(emu::State& state)
+{
+    state << mVTOR;
+    state << mICSR;
+    state << mAIRCR;
+}
+
+void SCB::RestoreState(emu::State& state)
+{
+    state >> mVTOR;
+    state >> mICSR;
+    state >> mAIRCR;
+}
+
 } // namespace emu

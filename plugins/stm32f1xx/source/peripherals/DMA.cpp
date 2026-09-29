@@ -65,6 +65,24 @@ void DMA::Write(uint32_t offset, uint32_t size, uint32_t value)
     EMU_LOG_MMIO("Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", offset, size, value);
 }
 
+void DMA::SaveState(emu::State& state)
+{
+    for (Channel& c : mChannels) {
+        c.SaveState(state);
+    }
+
+    state << mISR;
+}
+
+void DMA::RestoreState(emu::State& state)
+{
+    for (Channel& c : mChannels) {
+        c.RestoreState(state);
+    }
+
+    state >> mISR;
+}
+
 void DMA::SetChannelTransferComplete(int channel)
 {
     switch (channel) {
@@ -145,6 +163,22 @@ void DMA::Channel::Write(uint32_t offset, uint32_t size, uint32_t value)
     };
 
     EMU_LOG_MMIO("(Channel {}) Unknown write at offset 0x{:x}, size = {}, value = 0x{:x}", mChannelIdx, offset, size, value);
+}
+
+void DMA::Channel::SaveState(emu::State& state)
+{
+    state << mCCR;
+    state << mCNDTR;
+    state << mCPAR;
+    state << mCMAR;
+}
+
+void DMA::Channel::RestoreState(emu::State& state)
+{
+    state >> mCCR;
+    state >> mCNDTR;
+    state >> mCPAR;
+    state >> mCMAR;
 }
 
 void DMA::Channel::PerformTransfer()
