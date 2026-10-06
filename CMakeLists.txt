@@ -114,12 +114,24 @@ target_include_directories(narwhal PUBLIC
 
 target_compile_options(narwhal PRIVATE
     -Wall -Werror
-    # TODO cannot have these as error when using imgui_bundle imgui
-    -Wno-error=sign-compare
-    -Wno-error=unused-variable
-    -Wno-error=format-truncation
-    -Wno-error=stringop-truncation
 )
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(narwhal PRIVATE
+        -Wno-unused-private-field
+        -Wno-unused-lambda-capture
+        -Wno-unused-variable
+        -Wno-format-security
+    )
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(narwhal PRIVATE
+        # TODO cannot have these as error when using imgui_bundle imgui
+        -Wno-error=sign-compare
+        -Wno-error=unused-variable
+        -Wno-error=format-truncation
+        -Wno-error=stringop-truncation
+    )
+endif()
 
 # Allow plugins to see all symbols
 # TODO it would be nicer to have a stable API they can link against
