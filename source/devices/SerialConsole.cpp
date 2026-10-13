@@ -1,6 +1,6 @@
 #include "SerialConsole.hpp"
 #include "common.hpp"
-
+#include "Application.hpp"
 #include "Registry.hpp"
 #include "windows/SerialConsoleWindow.hpp"
 
@@ -30,15 +30,16 @@ void SerialConsole::OnData(uint32_t ch)
 {
     std::lock_guard lk(mBufferMutex);
 
+    // If headless, print buffer on newline
+    if (emu::Application::Get()->IsHeadless() && ch == '\n') {
+        EMU_LOG_INFO("{}", mBuffer);
+        mBuffer.clear();
+        return;
+    }
+
     mBuffer += static_cast<char>(ch);
 
     // TODO don't let the buffer grow indefinitely
-
-    // Flush buffer on newline
-    // if (ch == '\n') {
-    //     EMU_LOG_INFO("{}", mBuffer);
-    //     mBuffer.clear();
-    // }
 }
 
 std::string SerialConsole::GetBuffer()

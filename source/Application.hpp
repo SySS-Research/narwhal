@@ -27,6 +27,8 @@ public:
     Emulator* GetEmulator() const { return mEmulator.get(); }
     UserInterface* GetUI() const { return mUI.get(); }
 
+    bool IsHeadless() const { return GetUI() == nullptr; }
+
 private:
     // Global application instance
     static inline Application* sInstance = nullptr;
