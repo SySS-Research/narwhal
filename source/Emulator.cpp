@@ -342,22 +342,22 @@ bool Emulator::LoadState(std::string path)
     return mSerializedState.Load(path);
 }
 
-std::span<const uint8_t> Emulator::FuzzIter(std::function<void(void)> callback)
+void Emulator::FuzzIter(std::function<void(std::span<const uint8_t>)> callback)
 {
     if (!afl::ForkserverRunning()) {
-        return {};
+        return;
     }
 
     // Notify parent process of run
     afl::EndLoop();
 
-    // Restore loaded state
-    RestoreState(callback);
-
     // Wait until the parent process has more data
     afl::StartLoop();
 
-    return afl::GetFuzzData();
+    // Restore loaded state
+    RestoreState([callback]() {
+        callback(afl::GetFuzzData());
+    });
 }
 
 void Emulator::EnableGDBStub()

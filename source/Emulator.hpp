@@ -88,7 +88,7 @@ public:
     void SaveAndStoreState(std::string path);
     bool LoadState(std::string path);
 
-    std::span<const uint8_t> FuzzIter(std::function<void(void)> callback);
+    void FuzzIter(std::function<void(std::span<const uint8_t>)> callback);
 
     // TODO do we want to expose the engine just like this?
     UnicornEngine& GetEngine() { return mEngine; };

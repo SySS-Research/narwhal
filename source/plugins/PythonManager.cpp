@@ -106,9 +106,12 @@ PYBIND11_EMBEDDED_MODULE(emu, m)
         .def("restore_state", &emu::Emulator::RestoreState)
         .def("save_and_store_state", &emu::Emulator::SaveAndStoreState, pybind11::arg("path"))
         .def("load_state", &emu::Emulator::LoadState, pybind11::arg("path"))
-        .def("fuzz_iter", [](emu::Emulator& self, std::function<void(void)> callback) -> pybind11::bytes {
-            auto input = self.FuzzIter(callback);
-            return pybind11::bytes(reinterpret_cast<const char*>(input.data()), input.size());
+        .def("fuzz_iter", [](emu::Emulator& self, std::function<void(pybind11::bytes)> callback) {
+            self.FuzzIter([callback](std::span<const uint8_t> input) {
+                pybind11::gil_scoped_acquire g{};
+
+                callback(pybind11::bytes(reinterpret_cast<const char*>(input.data()), input.size()));
+            });
         });
 
     m.def("get_emulator", []() -> emu::Emulator* {
